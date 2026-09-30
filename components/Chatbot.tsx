@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, X, Send, Sparkles, RotateCcw, 
-  ChevronDown, ChevronUp, BookOpen, ArrowRight, Loader2, Compass
+  ArrowRight, Loader2, Compass
 } from 'lucide-react';
 import { useBooking } from '@/context/BookingContext';
 import { TOURS_DATA } from '@/data/tours';
@@ -13,7 +13,6 @@ interface ChatMessage {
   sender: 'user' | 'assistant';
   text: string;
   timestamp: string;
-  sources?: { id: string; category: string; excerpt: string }[];
   relatedTourSlug?: string;
 }
 
@@ -25,19 +24,95 @@ const QUICK_SUGGESTIONS = [
   '🗺️ Lịch trình 3N2Đ nên đi những đâu?',
 ];
 
+/**
+ * Component render nội dung tin nhắn sạch, format chuẩn đậm, gạch đầu dòng
+ */
+function FormattedMessage({ text }: { text: string }) {
+  const renderInlineFormatted = (rawText: string) => {
+    // Tách các đoạn in đậm **...**
+    const parts = rawText.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, idx) => {
+      // Phần tử lẻ là nội dung nằm trong **...**
+      if (idx % 2 === 1) {
+        const cleanBold = part.replace(/^\[(.*?)\]$/, '$1');
+        return (
+          <strong key={idx} className="font-bold text-stone-950">
+            {cleanBold}
+          </strong>
+        );
+      }
+
+      // Xử lý các dấu ngoặc vuông [Tên Tour...]
+      const bracketParts = part.split(/\[(.*?)\]/g);
+      if (bracketParts.length > 1) {
+        return bracketParts.map((sub, sIdx) => {
+          if (sIdx % 2 === 1) {
+            return (
+              <span key={sIdx} className="font-semibold text-emerald-800">
+                {sub}
+              </span>
+            );
+          }
+          return sub;
+        });
+      }
+
+      return part;
+    });
+  };
+
+  const lines = text.split('\n');
+
+  return (
+    <div className="space-y-2 leading-relaxed">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+
+        // Các dòng gạch đầu dòng (• hoặc - hoặc *)
+        if (trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          const itemText = trimmed.replace(/^[•\-*]\s*/, '');
+          return (
+            <div key={i} className="flex items-start gap-2 pl-0.5 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-2 shrink-0" />
+              <div className="flex-1 leading-relaxed">
+                {renderInlineFormatted(itemText)}
+              </div>
+            </div>
+          );
+        }
+
+        // Tiêu đề nhóm nội dung
+        if (trimmed.startsWith('**') && (trimmed.endsWith('**') || trimmed.includes(':**'))) {
+          return (
+            <div key={i} className="font-bold text-stone-900 pt-1.5 pb-0.5">
+              {renderInlineFormatted(trimmed)}
+            </div>
+          );
+        }
+
+        return (
+          <p key={i} className="leading-relaxed">
+            {renderInlineFormatted(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       sender: 'assistant',
-      text: 'Xin chào! Tôi là **Hà Giang AI** — trợ lý du lịch được huấn luyện trực tiếp từ tài liệu cẩm nang **Ha_Giang_RAG_Training_Knowledge_Base.pdf**.\n\nTôi có thể giúp bạn giải đáp mọi thắc mắc về các cung đường đèo, thời điểm hoa tam giác mạch, thủ tục giấy phép, ẩm thực hoặc chọn tour phù hợp. Bạn cần tư vấn điều gì hôm nay?',
+      text: 'Xin chào! Tôi là **Hà Giang AI** — trợ lý du lịch của Hà Giang Loop Expedition.\n\nTôi sẵn sàng tư vấn chi tiết cho bạn về thời điểm ngắm hoa tam giác mạch, kinh nghiệm vượt đèo Mã Pí Lèng, thủ tục giấy phép biên giới, đặc sản ẩm thực và các lịch trình phượt phù hợp nhất. Bạn đang dự định khám phá Hà Giang thế nào?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSourcesFor, setShowSourcesFor] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +124,7 @@ export default function Chatbot() {
     }
   };
 
-  // Chỉ focus input khi mở modal lần đầu và dùng preventScroll: true để không giật màn hình
+  // Focus ô input khi mở modal lần đầu mà không giật màn hình
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
@@ -60,7 +135,7 @@ export default function Chatbot() {
     }
   }, [isOpen]);
 
-  // Cuộn nội bộ khung chat khi có tin nhắn mới mà không ảnh hưởng tới window trang web
+  // Cuộn nội bộ khung chat khi có tin nhắn mới
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
@@ -100,7 +175,6 @@ export default function Chatbot() {
         sender: 'assistant',
         text: data.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sources: data.sources,
         relatedTourSlug: data.relatedTourSlug,
       };
 
@@ -110,7 +184,7 @@ export default function Chatbot() {
       const errorMsg: ChatMessage = {
         id: `err-${Date.now()}`,
         sender: 'assistant',
-        text: 'Xin lỗi, đã có lỗi kết nối khi tra cứu kho tri thức. Bạn vui lòng thử lại sau giây lát hoặc liên hệ hotline **0988.333.888** để được hỗ trợ trực tiếp.',
+        text: 'Xin lỗi, đã có lỗi kết nối khi tra cứu kho tri thức. Bạn vui lòng thử lại sau giây lát hoặc liên hệ hotline **0988.333.888** để được tư vấn nhanh nhé!',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -144,10 +218,10 @@ export default function Chatbot() {
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
           </div>
           <span className="font-bold text-sm tracking-wide hidden sm:inline">
-            Hỏi AI Hà Giang (RAG)
+            Hỏi AI Hà Giang
           </span>
           <span className="px-1.5 py-0.5 text-[10px] bg-white/20 rounded-md font-mono font-bold uppercase">
-            v1.0
+            AI
           </span>
         </button>
       )}
@@ -171,7 +245,7 @@ export default function Chatbot() {
                 </div>
                 <p className="text-[11px] text-stone-300 flex items-center gap-1 font-medium">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  RAG Training Knowledge Base
+                  Cẩm nang du lịch bản địa
                 </p>
               </div>
             </div>
@@ -207,70 +281,21 @@ export default function Chatbot() {
                   className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] p-3.5 rounded-2xl leading-relaxed whitespace-pre-wrap ${
+                    className={`max-w-[88%] p-3.5 rounded-2xl shadow-sm ${
                       isUser
-                        ? 'bg-emerald-600 text-white rounded-tr-none shadow-sm'
-                        : 'bg-white text-stone-800 border border-stone-200 rounded-tl-none shadow-sm'
+                        ? 'bg-emerald-600 text-white rounded-tr-none'
+                        : 'bg-white text-stone-800 border border-stone-200 rounded-tl-none'
                     }`}
                   >
-                    {/* Render message with bold emphasis and clean layout */}
-                    <div className="space-y-1">
-                      {msg.text.split('\n').map((line, i) => {
-                        if (!line.trim()) return <div key={i} className="h-1.5" />;
-                        return (
-                          <p key={i} className="leading-relaxed">
-                            {line}
-                          </p>
-                        );
-                      })}
-                    </div>
-
-                    {/* Source Citations Drawer Toggle */}
-                    {msg.sources && msg.sources.length > 0 && (
-                      <div className="mt-3 pt-2 border-t border-stone-100">
-                        <button
-                          onClick={() =>
-                            setShowSourcesFor(showSourcesFor === msg.id ? null : msg.id)
-                          }
-                          className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                          <span>
-                            {showSourcesFor === msg.id
-                              ? 'Ẩn nguồn trích xuất'
-                              : `Xem ${msg.sources.length} nguồn tài liệu (${msg.sources.map((s) => s.id).join(', ')})`}
-                          </span>
-                          {showSourcesFor === msg.id ? (
-                            <ChevronUp className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )}
-                        </button>
-
-                        {/* Collapsible Source Cards */}
-                        {showSourcesFor === msg.id && (
-                          <div className="mt-2 space-y-1.5 pl-1 animate-fade-in">
-                            {msg.sources.map((source, sIdx) => (
-                              <div
-                                key={sIdx}
-                                className="p-2 bg-stone-50 rounded-lg border border-stone-200 text-[10px] text-stone-600"
-                              >
-                                <div className="font-bold text-emerald-800">
-                                  [{source.id}] {source.category}
-                                </div>
-                                <div className="italic text-stone-500 mt-0.5">
-                                  {source.excerpt}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                    ) : (
+                      <FormattedMessage text={msg.text} />
                     )}
 
-                    {/* Matched Tour Booking CTA */}
+                    {/* Matched Tour Booking CTA Card */}
                     {msg.relatedTourSlug && (
-                      <div className="mt-3 pt-2 border-t border-stone-100">
+                      <div className="mt-3 pt-3 border-t border-stone-100">
                         {(() => {
                           const tour = TOURS_DATA.find((t) => t.slug === msg.relatedTourSlug);
                           if (!tour) return null;
@@ -280,11 +305,13 @@ export default function Chatbot() {
                                 setIsOpen(false);
                                 openBookingModal(tour, 'book');
                               }}
-                              className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs flex items-center justify-between shadow-sm transition-all transform hover:-translate-y-0.5"
                             >
-                              <Compass className="w-3.5 h-3.5" />
-                              <span>Đặt Tour: {tour.title}</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
+                              <div className="flex items-center gap-2 truncate">
+                                <Compass className="w-4 h-4 shrink-0" />
+                                <span className="truncate">Đặt ngay: {tour.title}</span>
+                              </div>
+                              <ArrowRight className="w-4 h-4 shrink-0" />
                             </button>
                           );
                         })()}
@@ -301,9 +328,9 @@ export default function Chatbot() {
 
             {/* Loading Indicator */}
             {isLoading && (
-              <div className="flex items-center gap-2 text-stone-500 text-xs bg-white p-3 rounded-2xl border border-stone-200 w-fit">
+              <div className="flex items-center gap-2 text-stone-500 text-xs bg-white p-3 rounded-2xl border border-stone-200 w-fit shadow-sm">
                 <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
-                <span>Đang tra cứu từ tài liệu RAG training...</span>
+                <span>Đang tra cứu cẩm nang Hà Giang...</span>
               </div>
             )}
           </div>
@@ -333,7 +360,7 @@ export default function Chatbot() {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Hỏi về thời tiết, đèo Mã Pí Lèng, tour..."
+                placeholder="Hỏi về thời tiết, đèo Mã Pí Lèng, kinh nghiệm đi tour..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 disabled={isLoading}

@@ -26,11 +26,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       answer: result.answer,
-      sources: result.sources.map((s) => ({
-        id: s.id,
-        category: s.category,
-        excerpt: s.content.substring(0, 180) + '...',
-      })),
       relatedTourSlug: result.relatedTourSlug,
     });
   } catch (error: unknown) {

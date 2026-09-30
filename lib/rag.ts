@@ -28,6 +28,27 @@ function removeVietnameseTones(str: string): string {
 }
 
 /**
+ * Clean raw chunk text from PDF artifacts, Q&A prefixes, and numbering
+ */
+function cleanChunkContent(raw: string): string {
+  let cleaned = raw
+    .replace(/^Q:\s*.*?\s*A:\s*/i, '') // Remove "Q: ... A: "
+    .replace(/^\d+\.\s*/, '') // Remove "12. "
+    .replace(/^\[HG-[A-Z0-9-]+\]\s*/i, '') // Remove "[HG-LOC-012] "
+    .replace(/^[A-Z0-9\s—–-]{3,30}:\s*/, '') // Remove all-caps prefixes like "MEO VAC: "
+    .replace(/\d+\.\s+[A-Z\s—–-]{3,}.*$/, '') // Remove trailing section headers like "8. SAMPLE TOUR PRODUCTS..."
+    .replace(/Chatbot nên\s+[^.]*(\.|$)/gi, '') // Remove internal chatbot training notes
+    .replace(/Khi trả lời,\s+[^.]*(\.|$)/gi, '')
+    .trim();
+
+  // Capitalize first letter if needed
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+  return cleaned;
+}
+
+/**
  * Retrieve the most relevant chunks from the Ha Giang RAG Knowledge Base.
  */
 export function retrieveRelevantChunks(query: string, topK = 5): KnowledgeChunk[] {
@@ -104,7 +125,6 @@ export function retrieveRelevantChunks(query: string, topK = 5): KnowledgeChunk[
     .filter((chunk) => chunk.score && chunk.score > 0)
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 
-  // If no term matched, return top 3 general introduction chunks
   if (ranked.length === 0) {
     return ALL_CHUNKS.slice(0, 3);
   }
@@ -119,13 +139,13 @@ export function retrieveRelevantChunks(query: string, topK = 5): KnowledgeChunk[
 export async function generateRAGAnswer(
   query: string,
   chunks: KnowledgeChunk[]
-): Promise<{ answer: string; sources: KnowledgeChunk[]; relatedTourSlug?: string }> {
+): Promise<{ answer: string; relatedTourSlug?: string }> {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
 
   // Build grounded context text from retrieved chunks
   const contextText = chunks
-    .map((c, i) => `[Tài liệu ${i + 1} - ${c.id} - ${c.category}]\n${c.content}`)
+    .map((c, i) => `[Tài liệu ${i + 1} - ${c.category}]\n${c.content}`)
     .join('\n\n');
 
   // Check if any tour on our site matches the query
@@ -144,10 +164,10 @@ export async function generateRAGAnswer(
   if (geminiKey && geminiKey.trim() !== '') {
     try {
       const prompt = `
-Bạn là "Hà Giang AI" - Trợ lý du lịch thông minh, thân thiện và am hiểu văn hóa của website "Hà Giang Loop Expedition".
-Nhiệm vụ của bạn là giải đáp thắc mắc của du khách dựa trên các tài liệu trích xuất từ cẩm nang du lịch Hà Giang (RAG Knowledge Base) dưới đây.
+Bạn là "Hà Giang AI" - Trợ lý du lịch thân thiện, am hiểu văn hóa của website "Hà Giang Loop Expedition".
+Hãy giải đáp thắc mắc của du khách bằng tiếng Việt chuẩn mực, ấm áp và chuyên nghiệp dựa trên tài liệu cẩm nang du lịch Hà Giang dưới đây.
 
-=== TÀI LIỆU RAG TRÍCH XUẤT TỪ FILE TRAINING ===
+=== TÀI LIỆU CẨM NANG HÀ GIANG ===
 ${contextText}
 
 === CÁC TOUR HIỆN CÓ CỦA CÔNG TY ===
@@ -158,11 +178,11 @@ ${contextText}
 5. Cho Thuê Xe Côn Tay & Xe Số Phượt - 250.000đ/ngày (Wave, Blade, XR 150 kèm full giáp)
 
 === QUY TẮC TRẢ LỜI ===
-1. Ưu tiên thông tin chính xác từ tài liệu RAG. Trả lời bằng tiếng Việt tự nhiên, ấm áp, nhiệt tình và chuyên nghiệp.
-2. Định dạng câu trả lời rõ ràng, dùng bullet point, in đậm các địa danh và lưu ý quan trọng.
-3. Cuối câu trả lời, dẫn chiếu mã tài liệu tham khảo (ví dụ: *Tham khảo: [HG-RAG-XXXX]*).
-4. Nếu du khách hỏi về dịch vụ hay đặt tour, hãy giới thiệu gói tour phù hợp nhất và khuyến khích họ đặt tour ngay trên website.
-5. Giữ câu trả lời súc tích, đi thẳng vào trọng tâm, tránh lan man.
+1. Trả lời trực tiếp, rõ ràng, gãy gọn và thân thiện.
+2. Dùng gạch đầu dòng (•) cho các ý chính để du khách dễ đọc. In đậm các tên địa danh và thông tin quan trọng.
+3. TUYỆT ĐỐI KHÔNG ghi mã tài liệu (như HG-RAG-XXXX) và KHÔNG ghi dòng nguồn tham khảo ở cuối câu trả lời.
+4. Nếu du khách hỏi về phương tiện hay cách đi, hãy gợi ý gói tour phù hợp nhất của công ty và hướng dẫn đặt ngay trên web.
+5. Giữ câu trả lời súc tích, độ dài vừa phải (khoảng 3-5 ý chính).
 
 Câu hỏi của du khách: "${query}"
 `;
@@ -187,8 +207,7 @@ Câu hỏi của du khách: "${query}"
 
       if (generatedText) {
         return {
-          answer: generatedText,
-          sources: chunks,
+          answer: generatedText.trim(),
           relatedTourSlug: matchedTour?.slug,
         };
       }
@@ -211,7 +230,7 @@ Câu hỏi của du khách: "${query}"
           messages: [
             {
               role: 'system',
-              content: `Bạn là trợ lý du lịch Hà Giang AI. Trả lời súc tích, ấm áp bằng tiếng Việt dựa trên tài liệu sau:\n${contextText}`,
+              content: `Bạn là trợ lý du lịch Hà Giang AI. Trả lời súc tích, ấm áp bằng tiếng Việt dựa trên tài liệu cẩm nang. Tuyệt đối không in mã tài liệu hay nguồn tham khảo. Trình bày rõ ràng bằng các gạch đầu dòng.\n${contextText}`,
             },
             { role: 'user', content: query },
           ],
@@ -222,8 +241,7 @@ Câu hỏi của du khách: "${query}"
       const answer = data?.choices?.[0]?.message?.content;
       if (answer) {
         return {
-          answer,
-          sources: chunks,
+          answer: answer.trim(),
           relatedTourSlug: matchedTour?.slug,
         };
       }
@@ -233,36 +251,45 @@ Câu hỏi của du khách: "${query}"
   }
 
   // ================= 3. BUILT-IN SMART RAG SYNTHESIZER (ZERO-KEY FALLBACK) =================
-  // If no LLM key is configured, synthesize a coherent, high-quality answer directly from the retrieved knowledge chunks!
-  const topChunk = chunks[0];
-  const otherChunks = chunks.slice(1, 4);
+  // Clean and filter chunks for natural speech
+  const cleanedPoints: string[] = [];
+  const seenTexts = new Set<string>();
 
-  let synthesizedAnswer = `Dựa trên cẩm nang du lịch Hà Giang **(Knowledge Base v1.0)**, tôi xin chia sẻ với bạn những thông tin quan trọng nhất:\n\n`;
+  for (const c of chunks) {
+    const cleaned = cleanChunkContent(c.content);
+    // Ignore duplicate or too short fragments
+    if (cleaned.length < 25 || seenTexts.has(cleaned)) continue;
+    seenTexts.add(cleaned);
+    cleanedPoints.push(cleaned);
+    if (cleanedPoints.length >= 4) break;
+  }
 
-  // Main insight
-  synthesizedAnswer += `📍 **Thông tin cốt lõi:**\n${topChunk.content}\n\n`;
+  let synthesizedAnswer = '';
 
-  // Additional points
-  if (otherChunks.length > 0) {
-    synthesizedAnswer += `💡 **Những điểm cần lưu ý thêm:**\n`;
-    otherChunks.forEach((c) => {
-      synthesizedAnswer += `• ${c.content}\n`;
-    });
-    synthesizedAnswer += `\n`;
+  if (cleanedPoints.length > 0) {
+    // Lead-in statement
+    synthesizedAnswer += `${cleanedPoints[0]}\n\n`;
+
+    // Supporting details as bullet points
+    if (cleanedPoints.length > 1) {
+      synthesizedAnswer += `**Một số thông tin hữu ích cần biết:**\n`;
+      for (let i = 1; i < cleanedPoints.length; i++) {
+        synthesizedAnswer += `• ${cleanedPoints[i]}\n`;
+      }
+      synthesizedAnswer += `\n`;
+    }
+  } else {
+    synthesizedAnswer += `Hà Giang là vùng đất kỳ vĩ với cao nguyên đá vôi, đèo Mã Pí Lèng và dòng sông Nho Quế. Bạn có thể chọn tự lái xe máy nếu có kinh nghiệm, hoặc chọn tour có xế bản địa (Easy Rider) để an tâm ngắm cảnh.\n\n`;
   }
 
   // Tour recommendation if relevant
   if (matchedTour) {
-    synthesizedAnswer += `🎒 **Gợi ý tour phù hợp tại Hà Giang Loop Expedition:**\n`;
-    synthesizedAnswer += `Bạn có thể tham khảo gói **[${matchedTour.title}]** với giá chỉ **${new Intl.NumberFormat('vi-VN').format(matchedTour.price)}đ**. Bạn có thể bấm nút **Đặt Tour Ngay** trên trang chủ để xem chi tiết lịch trình và thanh toán qua VietQR!\n\n`;
+    synthesizedAnswer += `🎒 **Gợi ý lịch trình phù hợp:**\n`;
+    synthesizedAnswer += `Bạn có thể tham khảo gói **[${matchedTour.title}]** với chi phí chỉ **${new Intl.NumberFormat('vi-VN').format(matchedTour.price)}đ/người**. Chuyến đi đã bao gồm bảo hiểm, chỗ nghỉ homestay và hỗ trợ toàn diện.\n`;
   }
 
-  // Sources citation
-  synthesizedAnswer += `📌 *Nguồn tra cứu: ${chunks.map((c) => `[${c.id}]`).join(', ')} từ file đào tạo Ha_Giang_RAG_Training_Knowledge_Base.pdf.*`;
-
   return {
-    answer: synthesizedAnswer,
-    sources: chunks,
+    answer: synthesizedAnswer.trim(),
     relatedTourSlug: matchedTour?.slug,
   };
 }
