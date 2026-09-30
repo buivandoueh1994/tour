@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message } = body;
+    const { message, language } = body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return NextResponse.json(
@@ -16,12 +16,13 @@ export async function POST(request: NextRequest) {
     }
 
     const query = message.trim();
+    const lang = language === 'en' ? 'en' : 'vi';
 
     // 1. Retrieve the top relevant chunks from the RAG knowledge base
     const retrievedChunks = retrieveRelevantChunks(query, 5);
 
     // 2. Generate grounded answer
-    const result = await generateRAGAnswer(query, retrievedChunks);
+    const result = await generateRAGAnswer(query, retrievedChunks, lang);
 
     return NextResponse.json({
       success: true,

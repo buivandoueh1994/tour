@@ -5,21 +5,23 @@ import { TOURS_DATA } from '@/data/tours';
 import { TransportType } from '@/types';
 import TourCard from './TourCard';
 import { Bike, Car, Footprints, KeyRound, Sparkles, Search, SlidersHorizontal } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 type FilterCategory = 'all' | TransportType;
 
 export default function TourList() {
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'recommended' | 'price-asc' | 'price-desc' | 'rating'>('recommended');
 
   const categories: { id: FilterCategory; label: string; icon: React.ElementType }[] = [
-    { id: 'all', label: 'Tất Cả Gói Tour', icon: Sparkles },
-    { id: 'motorbike', label: 'Xe Máy Tự Lái', icon: Bike },
-    { id: 'easy-rider', label: 'Easy Rider (Có Xế Kèm)', icon: Bike },
-    { id: 'limousine', label: 'Ô Tô / Limousine', icon: Car },
-    { id: 'trekking', label: 'Trekking & Kayak', icon: Footprints },
-    { id: 'rental', label: 'Thuê Xe Phượt', icon: KeyRound },
+    { id: 'all', label: t('catAll'), icon: Sparkles },
+    { id: 'motorbike', label: t('catMotorbike'), icon: Bike },
+    { id: 'easy-rider', label: t('catEasyRider'), icon: Bike },
+    { id: 'limousine', label: t('catLimousine'), icon: Car },
+    { id: 'trekking', label: t('catTrekking'), icon: Footprints },
+    { id: 'rental', label: t('catRental'), icon: KeyRound },
   ];
 
   const filteredTours = useMemo(() => {
@@ -27,13 +29,16 @@ export default function TourList() {
       // Category match
       const matchCategory = activeFilter === 'all' || tour.transportType === activeFilter;
 
-      // Query match
+      // Query match (support both VI and EN search)
       const query = searchQuery.toLowerCase().trim();
       const matchQuery =
         !query ||
         tour.title.toLowerCase().includes(query) ||
+        (tour.titleEn && tour.titleEn.toLowerCase().includes(query)) ||
         tour.shortDesc.toLowerCase().includes(query) ||
-        tour.highlights.some((h) => h.toLowerCase().includes(query));
+        (tour.shortDescEn && tour.shortDescEn.toLowerCase().includes(query)) ||
+        tour.highlights.some((h) => h.toLowerCase().includes(query)) ||
+        (tour.highlightsEn && tour.highlightsEn.some((h) => h.toLowerCase().includes(query)));
 
       return matchCategory && matchQuery;
     }).sort((a, b) => {
@@ -50,13 +55,13 @@ export default function TourList() {
         {/* Section Title */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="text-emerald-800 font-bold text-xs uppercase tracking-widest bg-emerald-100/80 px-3.5 py-1.5 rounded-full border border-emerald-200">
-            Lộ Trình Độc Bản
+            {t('toursTag')}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">
-            Chọn Hành Trình Khám Phá Hà Giang Của Bạn
+            {t('toursTitle')}
           </h2>
           <p className="text-slate-600 mt-3 text-base sm:text-lg">
-            Từ trải nghiệm tự cầm lái ôm cua, ngồi sau xế bản địa ngắm cảnh đến tour Limousine nghỉ dưỡng gia đình.
+            {t('toursSubtitle')}
           </p>
         </div>
 
@@ -91,7 +96,7 @@ export default function TourList() {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Tìm tour, địa danh (Mã Pí Lèng, Nho Quế...)"
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition-all text-slate-800"
@@ -101,16 +106,16 @@ export default function TourList() {
             {/* Sort Select */}
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <SlidersHorizontal className="w-4 h-4 text-slate-500" />
-              <span className="text-xs text-slate-500 font-medium">Sắp xếp:</span>
+              <span className="text-xs text-slate-500 font-medium">{t('sortByLabel')}</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'recommended' | 'price-asc' | 'price-desc' | 'rating')}
                 className="text-xs sm:text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700"
               >
-                <option value="recommended">Đề xuất phổ biến</option>
-                <option value="price-asc">Giá: Thấp đến Cao</option>
-                <option value="price-desc">Giá: Cao đến Thấp</option>
-                <option value="rating">Đánh giá cao nhất</option>
+                <option value="recommended">{t('sortRecommended')}</option>
+                <option value="price-asc">{t('sortPriceAsc')}</option>
+                <option value="price-desc">{t('sortPriceDesc')}</option>
+                <option value="rating">{t('sortRating')}</option>
               </select>
             </div>
           </div>
@@ -125,7 +130,7 @@ export default function TourList() {
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
-            <p className="text-slate-500 font-medium">Không tìm thấy tour phù hợp với yêu cầu tìm kiếm của bạn.</p>
+            <p className="text-slate-500 font-medium">{t('noToursFound')}</p>
             <button
               onClick={() => {
                 setActiveFilter('all');
@@ -133,7 +138,7 @@ export default function TourList() {
               }}
               className="mt-4 px-5 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-semibold hover:bg-emerald-900 shadow-sm"
             >
-              Xem tất cả tour
+              {t('viewAllTours')}
             </button>
           </div>
         )}

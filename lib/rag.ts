@@ -136,12 +136,18 @@ export function retrieveRelevantChunks(query: string, topK = 5): KnowledgeChunk[
  * Generate answer using LLM (Gemini or OpenAI) with RAG context,
  * or fallback to our smart built-in natural language synthesizer.
  */
+/**
+ * Generate answer using LLM (Gemini or OpenAI) with RAG context,
+ * or fallback to our smart built-in natural language synthesizer.
+ */
 export async function generateRAGAnswer(
   query: string,
-  chunks: KnowledgeChunk[]
+  chunks: KnowledgeChunk[],
+  language: 'vi' | 'en' = 'vi'
 ): Promise<{ answer: string; relatedTourSlug?: string }> {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
+  const isEn = language === 'en';
 
   // Build grounded context text from retrieved chunks
   const contextText = chunks
@@ -153,17 +159,41 @@ export async function generateRAGAnswer(
     const q = query.toLowerCase();
     return (
       (q.includes('easy rider') && t.transportType === 'easy-rider') ||
-      (q.includes('tự lái') && t.transportType === 'motorbike') ||
-      ((q.includes('ô tô') || q.includes('limousine') || q.includes('gia đình')) && t.transportType === 'limousine') ||
+      ((q.includes('tự lái') || q.includes('self-drive')) && t.transportType === 'motorbike') ||
+      ((q.includes('ô tô') || q.includes('limousine') || q.includes('car') || q.includes('family')) && t.transportType === 'limousine') ||
       ((q.includes('trekking') || q.includes('kayak')) && t.transportType === 'trekking') ||
-      (q.includes('thuê xe') && t.transportType === 'rental')
+      ((q.includes('thuê xe') || q.includes('rental')) && t.transportType === 'rental')
     );
   });
 
   // ================= 1. GEMINI API INTEGRATION =================
   if (geminiKey && geminiKey.trim() !== '') {
     try {
-      const prompt = `
+      const prompt = isEn
+        ? `
+You are "Ha Giang AI" - The warm, knowledgeable local travel assistant for "Ha Giang Loop Expedition".
+Answer the traveler's question in natural, clear, welcoming English based on the Ha Giang travel guidebook information below.
+
+=== HA GIANG TRAVEL GUIDEBOOK KNOWLEDGE ===
+${contextText}
+
+=== OUR AVAILABLE TOUR PACKAGES ===
+1. Ha Giang Loop - Self-Drive Motorbike (3D2N) - 2,890,000 VND (Tham Ma Pass, Ma Pi Leng Pass, Lung Cu Flag Tower, Nho Que River)
+2. Ha Giang Easy Rider - With Native Driver (3D2N) - 3,990,000 VND (Safest option for non-riders, native driver doubles as photo guide)
+3. Dong Van Karst Plateau VIP Limousine Tour (4D3N) - 4,850,000 VND (Great for families, seniors, luxury 4-star resorts)
+4. Ma Pi Leng Trekking & Tu San Canyon Kayak (2D1N) - 2,150,000 VND (Riverside glamping, kayaking)
+5. Manual & Semi-automatic Motorbike Rental - 250,000 VND/day (Honda Wave, Blade, XR 150 with full armor gear)
+
+=== RESPONSE RULES ===
+1. Answer directly, concisely, and warmly in English.
+2. Use bullet points (•) for key takeaways. Bold key locations and important information.
+3. NEVER mention document IDs (like HG-RAG-XXXX) and NEVER append a sources/reference list at the bottom.
+4. If the traveler asks about transportation or which loop to choose, recommend the most suitable package and invite them to book directly on the site.
+5. Keep the response concise and well structured (around 3-5 main bullet points).
+
+Traveler's question: "${query}"
+`
+        : `
 Bạn là "Hà Giang AI" - Trợ lý du lịch thân thiện, am hiểu văn hóa của website "Hà Giang Loop Expedition".
 Hãy giải đáp thắc mắc của du khách bằng tiếng Việt chuẩn mực, ấm áp và chuyên nghiệp dựa trên tài liệu cẩm nang du lịch Hà Giang dưới đây.
 
@@ -230,7 +260,9 @@ Câu hỏi của du khách: "${query}"
           messages: [
             {
               role: 'system',
-              content: `Bạn là trợ lý du lịch Hà Giang AI. Trả lời súc tích, ấm áp bằng tiếng Việt dựa trên tài liệu cẩm nang. Tuyệt đối không in mã tài liệu hay nguồn tham khảo. Trình bày rõ ràng bằng các gạch đầu dòng.\n${contextText}`,
+              content: isEn
+                ? `You are Ha Giang AI travel guide. Answer warmly, helpfully, and concisely in English based on the guidebook knowledge. Use clear bullet points. Do not print reference codes.\n${contextText}`
+                : `Bạn là trợ lý du lịch Hà Giang AI. Trả lời súc tích, ấm áp bằng tiếng Việt dựa trên tài liệu cẩm nang. Tuyệt đối không in mã tài liệu hay nguồn tham khảo. Trình bày rõ ràng bằng các gạch đầu dòng.\n${contextText}`,
             },
             { role: 'user', content: query },
           ],
@@ -272,20 +304,28 @@ Câu hỏi của du khách: "${query}"
 
     // Supporting details as bullet points
     if (cleanedPoints.length > 1) {
-      synthesizedAnswer += `**Một số thông tin hữu ích cần biết:**\n`;
+      synthesizedAnswer += isEn ? `**Useful travel tips:**\n` : `**Một số thông tin hữu ích cần biết:**\n`;
       for (let i = 1; i < cleanedPoints.length; i++) {
         synthesizedAnswer += `• ${cleanedPoints[i]}\n`;
       }
       synthesizedAnswer += `\n`;
     }
   } else {
-    synthesizedAnswer += `Hà Giang là vùng đất kỳ vĩ với cao nguyên đá vôi, đèo Mã Pí Lèng và dòng sông Nho Quế. Bạn có thể chọn tự lái xe máy nếu có kinh nghiệm, hoặc chọn tour có xế bản địa (Easy Rider) để an tâm ngắm cảnh.\n\n`;
+    synthesizedAnswer += isEn
+      ? `Ha Giang is Vietnam's spectacular frontier with jagged limestone peaks, Ma Pi Leng Pass, and the emerald Nho Que River. You can ride self-drive if experienced or choose an Easy Rider local guide for a safe, scenic journey.\n\n`
+      : `Hà Giang là vùng đất kỳ vĩ với cao nguyên đá vôi, đèo Mã Pí Lèng và dòng sông Nho Quế. Bạn có thể chọn tự lái xe máy nếu có kinh nghiệm, hoặc chọn tour có xế bản địa (Easy Rider) để an tâm ngắm cảnh.\n\n`;
   }
 
   // Tour recommendation if relevant
   if (matchedTour) {
-    synthesizedAnswer += `🎒 **Gợi ý lịch trình phù hợp:**\n`;
-    synthesizedAnswer += `Bạn có thể tham khảo gói **[${matchedTour.title}]** với chi phí chỉ **${new Intl.NumberFormat('vi-VN').format(matchedTour.price)}đ/người**. Chuyến đi đã bao gồm bảo hiểm, chỗ nghỉ homestay và hỗ trợ toàn diện.\n`;
+    if (isEn) {
+      const tourTitle = matchedTour.titleEn || matchedTour.title;
+      synthesizedAnswer += `🎒 **Recommended itinerary:**\n`;
+      synthesizedAnswer += `You can explore our **[${tourTitle}]** package for only **${new Intl.NumberFormat('en-US').format(matchedTour.price)} VND/guest**. All packages include comprehensive insurance, authentic homestays, and complete roadside assistance.\n`;
+    } else {
+      synthesizedAnswer += `🎒 **Gợi ý lịch trình phù hợp:**\n`;
+      synthesizedAnswer += `Bạn có thể tham khảo gói **[${matchedTour.title}]** với chi phí chỉ **${new Intl.NumberFormat('vi-VN').format(matchedTour.price)}đ/người**. Chuyến đi đã bao gồm bảo hiểm, chỗ nghỉ homestay và hỗ trợ toàn diện.\n`;
+    }
   }
 
   return {

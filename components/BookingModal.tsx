@@ -8,11 +8,13 @@ import {
   MapPin, ShieldCheck, ArrowRight, Loader2, Info, ChevronRight, FileText
 } from 'lucide-react';
 import { useBooking } from '@/context/BookingContext';
-import { formatCurrency } from '@/lib/utils';
+import { useLanguage } from '@/context/LanguageContext';
+import { formatCurrency, getLocalizedTour } from '@/lib/utils';
 import { BookingCustomerInfo } from '@/types';
 
 export default function BookingModal() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const { 
     selectedTour, 
     isModalOpen, 
@@ -22,6 +24,8 @@ export default function BookingModal() {
     setCurrentOrder,
     addRecentOrder
   } = useBooking();
+
+  const tour = selectedTour ? getLocalizedTour(selectedTour, language) : null;
 
   // Booking Form State
   const [fullName, setFullName] = useState('');
@@ -49,12 +53,12 @@ export default function BookingModal() {
 
   // Set default vehicle option if available
   useEffect(() => {
-    if (selectedTour?.vehicleOptions && selectedTour.vehicleOptions.length > 0) {
-      setVehicleChoice(selectedTour.vehicleOptions[0]);
+    if (tour?.vehicleOptions && tour.vehicleOptions.length > 0) {
+      setVehicleChoice(tour.vehicleOptions[0]);
     }
-  }, [selectedTour]);
+  }, [tour?.id, tour?.vehicleOptions, language]);
 
-  if (!isModalOpen || !selectedTour) return null;
+  if (!isModalOpen || !selectedTour || !tour) return null;
 
   // Calculate total price
   const totalPrice = selectedTour.price * guests;
@@ -65,23 +69,36 @@ export default function BookingModal() {
     setErrorMessage('');
 
     if (!fullName.trim()) {
-      setErrorMessage('Vui lòng nhập họ và tên của bạn');
+      setErrorMessage(
+        language === 'en' ? 'Please enter your full name' : 'Vui lòng nhập họ và tên của bạn'
+      );
       return;
     }
 
-    const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-    if (!phoneRegex.test(phone.trim())) {
-      setErrorMessage('Số điện thoại không hợp lệ (Vui lòng nhập 10 chữ số)');
+    const phoneClean = phone.trim().replace(/[\s\-\(\)]/g, '');
+    const isPhoneValid = /^\+?[0-9]{8,15}$/.test(phoneClean);
+    if (!isPhoneValid) {
+      setErrorMessage(
+        language === 'en'
+          ? 'Please enter a valid phone number (at least 8 digits)'
+          : 'Số điện thoại không hợp lệ (Vui lòng nhập tối thiểu 8-10 chữ số)'
+      );
       return;
     }
 
     if (!departureDate) {
-      setErrorMessage('Vui lòng chọn ngày khởi hành');
+      setErrorMessage(
+        language === 'en' ? 'Please select your departure date' : 'Vui lòng chọn ngày khởi hành'
+      );
       return;
     }
 
     if (!agreeTerms) {
-      setErrorMessage('Vui lòng đồng ý với điều khoản dịch vụ và chính sách an toàn');
+      setErrorMessage(
+        language === 'en'
+          ? 'Please agree to our safety regulations and payment terms'
+          : 'Vui lòng đồng ý với điều khoản dịch vụ và chính sách an toàn'
+      );
       return;
     }
 
@@ -95,7 +112,7 @@ export default function BookingModal() {
         departureDate,
         guests,
         notes: notes.trim(),
-        vehicleChoice: selectedTour.vehicleOptions ? vehicleChoice : undefined,
+        vehicleChoice: tour.vehicleOptions ? vehicleChoice : undefined,
       };
 
       const res = await fetch('/api/payment/create-payment-link', {
@@ -103,7 +120,7 @@ export default function BookingModal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tourId: selectedTour.id,
-          tourTitle: selectedTour.title,
+          tourTitle: tour.title,
           amount: totalPrice,
           customerInfo,
         }),
@@ -112,7 +129,9 @@ export default function BookingModal() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Không thể tạo mã thanh toán VietQR');
+        throw new Error(
+          data.message || (language === 'en' ? 'Unable to generate VietQR payment link' : 'Không thể tạo mã thanh toán VietQR')
+        );
       }
 
       // Lưu thông tin đơn đặt chỗ vào Context & Storage
@@ -126,7 +145,7 @@ export default function BookingModal() {
       router.push(`/payment-status?orderCode=${data.orderCode}`);
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
+      const msg = err instanceof Error ? err.message : (language === 'en' ? 'An error occurred. Please try again later.' : 'Đã có lỗi xảy ra. Vui lòng thử lại sau.');
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -150,11 +169,11 @@ export default function BookingModal() {
         {/* Header with Background Thumbnail */}
         <div className="relative bg-stone-900 text-white p-5 sm:p-6 shrink-0 flex items-start justify-between">
           <div className="relative z-10 pr-10">
-            <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 ${selectedTour.badgeColor || 'bg-emerald-600 text-white'}`}>
-              {selectedTour.tag}
+            <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 ${tour.badgeColor || 'bg-emerald-600 text-white'}`}>
+              {tour.tag}
             </span>
             <h2 className="text-xl sm:text-2xl font-black text-white leading-snug">
-              {selectedTour.title}
+              {tour.title}
             </h2>
             <div className="flex flex-wrap items-center gap-4 text-xs text-stone-300 mt-2">
               <span className="flex items-center gap-1">
@@ -162,10 +181,10 @@ export default function BookingModal() {
                 Hà Giang Loop
               </span>
               <span>•</span>
-              <span>Thời lượng: <strong>{selectedTour.duration}</strong></span>
+              <span>{language === 'en' ? 'Duration:' : 'Thời lượng:'} <strong>{tour.duration}</strong></span>
               <span>•</span>
               <span className="text-emerald-300 font-bold text-sm">
-                {formatCurrency(selectedTour.price)} / người
+                {formatCurrency(tour.price, language)} / {language === 'en' ? 'person' : 'người'}
               </span>
             </div>
           </div>
@@ -173,7 +192,7 @@ export default function BookingModal() {
           <button
             onClick={closeBookingModal}
             className="relative z-10 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-            aria-label="Đóng modal"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -181,7 +200,7 @@ export default function BookingModal() {
           {/* Subdued Background Image */}
           <div className="absolute inset-0 opacity-20">
             <Image
-              src={selectedTour.image}
+              src={tour.image}
               alt=""
               fill
               className="object-cover"
@@ -200,7 +219,7 @@ export default function BookingModal() {
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>Đặt Tour & Thanh Toán VietQR</span>
+            <span>{t('modalTabBook')}</span>
           </button>
 
           <button
@@ -212,7 +231,7 @@ export default function BookingModal() {
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>Xem Chi Tiết Lịch Trình & Tiện Ích</span>
+            <span>{t('modalTabDetails')}</span>
           </button>
         </div>
 
@@ -225,15 +244,15 @@ export default function BookingModal() {
               <div>
                 <h3 className="text-lg font-black text-stone-900 mb-4 flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-                  Lịch Trình Chi Tiết Từng Ngày
+                  {language === 'en' ? 'Daily Detailed Itinerary' : 'Lịch Trình Chi Tiết Từng Ngày'}
                 </h3>
 
                 <div className="space-y-4">
-                  {selectedTour.itinerary.map((day) => (
+                  {tour.itinerary.map((day) => (
                     <div key={day.day} className="p-4 rounded-2xl bg-stone-50 border border-stone-200">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white text-xs font-bold">
-                          Ngày {day.day}
+                          {t('modalDayPrefix')} {day.day}
                         </span>
                         <h4 className="font-bold text-sm sm:text-base text-stone-900">
                           {day.title}
@@ -250,8 +269,8 @@ export default function BookingModal() {
                       </div>
 
                       <div className="mt-3 pt-3 border-t border-stone-200 flex flex-wrap gap-4 text-xs text-stone-500">
-                        <span>🍽️ <strong>Bữa ăn:</strong> {day.meals.join(', ')}</span>
-                        <span>🏡 <strong>Nghỉ đêm:</strong> {day.stay}</span>
+                        <span>🍽️ <strong>{t('modalMeals')}</strong> {day.meals.join(', ')}</span>
+                        <span>🏡 <strong>{t('modalStay')}</strong> {day.stay}</span>
                       </div>
                     </div>
                   ))}
@@ -264,10 +283,10 @@ export default function BookingModal() {
                 <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200">
                   <h4 className="font-bold text-emerald-900 text-sm mb-3 flex items-center gap-2">
                     <Check className="w-4 h-4 text-emerald-600" />
-                    Giá Tour Đã Bao Gồm
+                    {t('modalInclusions')}
                   </h4>
                   <ul className="space-y-2 text-xs text-stone-700">
-                    {selectedTour.inclusions.map((item, idx) => (
+                    {tour.inclusions.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{item}</span>
@@ -280,10 +299,10 @@ export default function BookingModal() {
                 <div className="p-5 rounded-2xl bg-rose-50/50 border border-rose-200">
                   <h4 className="font-bold text-rose-900 text-sm mb-3 flex items-center gap-2">
                     <X className="w-4 h-4 text-rose-600" />
-                    Chưa Bao Gồm
+                    {t('modalExclusions')}
                   </h4>
                   <ul className="space-y-2 text-xs text-stone-700">
-                    {selectedTour.exclusions.map((item, idx) => (
+                    {tour.exclusions.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <span className="text-rose-500 font-bold shrink-0 mt-0.5">•</span>
                         <span>{item}</span>
@@ -299,7 +318,7 @@ export default function BookingModal() {
                   onClick={() => setModalTab('book')}
                   className="px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all inline-flex items-center gap-2"
                 >
-                  <span>Chuyển Sang Bước Đặt Tour Này</span>
+                  <span>{language === 'en' ? 'Proceed to Booking This Tour' : 'Chuyển Sang Bước Đặt Tour Này'}</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -320,7 +339,7 @@ export default function BookingModal() {
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-emerald-600" />
-                    Ngày Khởi Hành <span className="text-rose-500">*</span>
+                    {t('modalSelectedDate')} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -330,14 +349,16 @@ export default function BookingModal() {
                     required
                     className="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-xs sm:text-sm font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
-                  <span className="text-[11px] text-stone-400 mt-1 block">Khởi hành đều đặn mỗi ngày</span>
+                  <span className="text-[11px] text-stone-400 mt-1 block">
+                    {language === 'en' ? 'Daily guaranteed departures' : 'Khởi hành đều đặn mỗi ngày'}
+                  </span>
                 </div>
 
                 {/* Number of Guests */}
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1.5">
                     <Users className="w-4 h-4 text-emerald-600" />
-                    Số Lượng Khách <span className="text-rose-500">*</span>
+                    {t('modalGuests')} <span className="text-rose-500">*</span>
                   </label>
                   <div className="flex items-center">
                     <button
@@ -348,7 +369,7 @@ export default function BookingModal() {
                       -
                     </button>
                     <div className="h-11 px-6 bg-white border-y border-stone-300 flex items-center justify-center font-bold text-stone-900 text-sm min-w-[70px]">
-                      {guests} {guests > 1 ? 'người' : 'khách'}
+                      {guests} {guests > 1 ? (language === 'en' ? 'guests' : 'người') : (language === 'en' ? 'guest' : 'khách')}
                     </div>
                     <button
                       type="button"
@@ -358,18 +379,20 @@ export default function BookingModal() {
                       +
                     </button>
                   </div>
-                  <span className="text-[11px] text-stone-400 mt-1 block">Đoàn từ 5 khách tặng 1 buổi đốt lửa trại riêng</span>
+                  <span className="text-[11px] text-stone-400 mt-1 block">
+                    {language === 'en' ? 'Groups of 5+ receive a complimentary campfire evening' : 'Đoàn từ 5 khách tặng 1 buổi đốt lửa trại riêng'}
+                  </span>
                 </div>
               </div>
 
               {/* Optional Vehicle Choice for Rental */}
-              {selectedTour.vehicleOptions && selectedTour.vehicleOptions.length > 0 && (
+              {tour.vehicleOptions && tour.vehicleOptions.length > 0 && (
                 <div>
                   <label className="block text-xs font-bold text-stone-700 mb-2">
-                    Chọn Dòng Xe Phù Hợp:
+                    {t('modalSelectVehicle')}:
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {selectedTour.vehicleOptions.map((v, i) => (
+                    {tour.vehicleOptions.map((v, i) => (
                       <label
                         key={i}
                         className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
@@ -397,18 +420,18 @@ export default function BookingModal() {
               <div>
                 <h4 className="text-sm font-bold text-stone-900 mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                  Thông Tin Trưởng Đoàn Nhận Vé
+                  {t('modalContactTitle')}
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Full Name */}
                   <div>
                     <label className="block text-xs font-semibold text-stone-700 mb-1">
-                      Họ và Tên <span className="text-rose-500">*</span>
+                      {t('modalFullName')} <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Nguyễn Văn A"
+                      placeholder={language === 'en' ? 'e.g. John Smith' : 'Nguyễn Văn A'}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
@@ -419,11 +442,11 @@ export default function BookingModal() {
                   {/* Phone / Zalo */}
                   <div>
                     <label className="block text-xs font-semibold text-stone-700 mb-1">
-                      Số Điện Thoại / Zalo <span className="text-rose-500">*</span>
+                      {t('modalPhone')} <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="tel"
-                      placeholder="0912345678"
+                      placeholder={language === 'en' ? '+84 912 345 678' : '0912345678'}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
@@ -434,11 +457,11 @@ export default function BookingModal() {
                   {/* Email */}
                   <div>
                     <label className="block text-xs font-semibold text-stone-700 mb-1">
-                      Địa Chỉ Email (Nhận voucher điện tử)
+                      {t('modalEmail')}
                     </label>
                     <input
                       type="email"
-                      placeholder="vidu@gmail.com"
+                      placeholder={language === 'en' ? 'example@gmail.com' : 'vidu@gmail.com'}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
@@ -448,11 +471,11 @@ export default function BookingModal() {
                   {/* Special Notes */}
                   <div>
                     <label className="block text-xs font-semibold text-stone-700 mb-1">
-                      Yêu Cầu Đặc Biệt (Ăn chay, đón tại bến xe...)
+                      {t('modalNotes')}
                     </label>
                     <input
                       type="text"
-                      placeholder="VD: Đón lúc 5h sáng tại bến xe Hà Giang..."
+                      placeholder={language === 'en' ? 'e.g. Vegetarian food, bus station pickup...' : 'VD: Đón lúc 5h sáng tại bến xe Hà Giang...'}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
@@ -464,20 +487,22 @@ export default function BookingModal() {
               {/* Price Calculation Summary Box */}
               <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200">
                 <div className="flex items-center justify-between text-xs text-stone-600 mb-2">
-                  <span>Đơn giá tour:</span>
-                  <span className="font-semibold">{formatCurrency(selectedTour.price)} x {guests} khách</span>
+                  <span>{t('modalUnitPrice')}</span>
+                  <span className="font-semibold">
+                    {formatCurrency(tour.price, language)} x {guests} {guests > 1 ? (language === 'en' ? 'guests' : 'khách') : (language === 'en' ? 'guest' : 'khách')}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-emerald-700 mb-3">
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    Bảo hiểm & Cứu hộ 24/7:
+                    {t('modalInsuranceGift')}
                   </span>
-                  <span className="font-bold">Miễn phí (Tặng kèm)</span>
+                  <span className="font-bold">{t('modalFreeGift')}</span>
                 </div>
                 <div className="pt-2 border-t border-emerald-200/80 flex items-baseline justify-between">
-                  <span className="text-sm font-bold text-stone-900">Tổng thanh toán:</span>
+                  <span className="text-sm font-bold text-stone-900">{t('modalTotalPrice')}</span>
                   <span className="text-2xl font-black text-emerald-800 tracking-tight">
-                    {formatCurrency(totalPrice)}
+                    {formatCurrency(totalPrice, language)}
                   </span>
                 </div>
               </div>
@@ -491,7 +516,7 @@ export default function BookingModal() {
                   className="rounded text-emerald-600 focus:ring-emerald-500 mt-0.5"
                 />
                 <span>
-                  Tôi xác nhận thông tin đã cung cấp là chính xác, đồng ý với quy định an toàn cung đường phượt và chính sách thanh toán VietQR của ban tổ chức.
+                  {t('modalTermsAgree')}
                 </span>
               </label>
 
@@ -505,18 +530,18 @@ export default function BookingModal() {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Đang khởi tạo mã VietQR...</span>
+                      <span>{t('modalSubmitting')}</span>
                     </>
                   ) : (
                     <>
-                      <span>Tiến Hành Thanh Toán VietQR</span>
+                      <span>{t('modalSubmitBtn')}</span>
                       <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </button>
                 <div className="flex items-center justify-center gap-2 text-[11px] text-stone-500 mt-2">
                   <Info className="w-3 h-3 text-emerald-600" />
-                  <span>Mã QR động sẽ được tạo tự động với đúng số tiền và nội dung chuyển khoản</span>
+                  <span>{t('modalDynamicQrNote')}</span>
                 </div>
               </div>
             </form>

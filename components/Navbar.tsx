@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Compass, PhoneCall, CalendarCheck, Menu, X, ShieldCheck, MapPin } from 'lucide-react';
 import { useBooking } from '@/context/BookingContext';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface NavbarProps {
   onOpenMyBookings?: () => void;
@@ -12,6 +14,7 @@ interface NavbarProps {
 export default function Navbar({ onOpenMyBookings }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { recentOrders } = useBooking();
+  const { t } = useLanguage();
 
   const pendingCount = recentOrders.filter((o) => o.status === 'PENDING').length;
 
@@ -23,16 +26,16 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 font-medium">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Bảo hiểm 100%
+              {t('topBarInsurance')}
             </span>
             <span className="text-emerald-400">•</span>
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-              Khởi hành hàng ngày từ Hà Nội & TP Hà Giang
+              {t('topBarDeparture')}
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span>Hỗ trợ khẩn cấp 24/7:</span>
+            <span>{t('topBarEmergency')}</span>
             <a href="tel:0988333888" className="font-bold text-amber-300 hover:text-white hover:underline flex items-center gap-1 transition-colors">
               <PhoneCall className="w-3 h-3 text-amber-400" /> 0988.333.888
             </a>
@@ -56,7 +59,7 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium tracking-wide">
-                Bản địa • Độc bản • An toàn
+                {t('brandSubtext')}
               </p>
             </div>
           </Link>
@@ -64,33 +67,36 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
           {/* Desktop Menu */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700">
             <a href="#tours" className="hover:text-emerald-700 transition-colors">
-              Tour
+              {t('navTours')}
             </a>
             <a href="#highlights" className="hover:text-emerald-700 transition-colors">
-              Trải Nghiệm
+              {t('navHighlights')}
             </a>
             <a href="#guide" className="hover:text-emerald-700 transition-colors">
-              Cẩm Nang
+              {t('navGuide')}
             </a>
             <a href="#reviews" className="hover:text-emerald-700 transition-colors">
-              Đánh Giá
+              {t('navReviews')}
             </a>
             <a href="#faq" className="hover:text-emerald-700 transition-colors">
-              FAQ
+              {t('navFaq')}
             </a>
           </nav>
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* My Bookings Button */}
             {onOpenMyBookings && (
               <button
                 onClick={onOpenMyBookings}
                 className="relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-slate-700 hover:text-emerald-800 hover:bg-slate-100 transition-colors text-sm font-semibold border border-slate-200"
-                title="Đơn đặt tour của tôi"
+                title={t('myBookings')}
               >
                 <CalendarCheck className="w-4 h-4 text-emerald-700" />
-                <span>Đơn của tôi</span>
+                <span>{t('myBookings')}</span>
                 {recentOrders.length > 0 && (
                   <span className="w-5 h-5 rounded-full bg-emerald-700 text-white text-xs flex items-center justify-center font-bold">
                     {recentOrders.length}
@@ -110,7 +116,7 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold shadow-md shadow-amber-500/25 transition-all transform hover:-translate-y-0.5"
             >
               <PhoneCall className="w-4 h-4" />
-              <span>Hotline / Zalo</span>
+              <span>{t('hotlineZalo')}</span>
             </a>
           </div>
 
@@ -140,41 +146,46 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-xl">
+          {/* Language Switcher in Mobile Drawer */}
+          <div className="pb-1 border-b border-slate-100">
+            <LanguageSwitcher variant="drawer" />
+          </div>
+
           <a
             href="#tours"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-semibold text-slate-800 hover:text-emerald-700"
           >
-            Tour
+            {t('navTours')}
           </a>
           <a
             href="#highlights"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-semibold text-slate-800 hover:text-emerald-700"
           >
-            Trải Nghiệm
+            {t('navHighlights')}
           </a>
           <a
             href="#guide"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-semibold text-slate-800 hover:text-emerald-700"
           >
-            Cẩm Nang
+            {t('navGuide')}
           </a>
           <a
             href="#reviews"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-semibold text-slate-800 hover:text-emerald-700"
           >
-            Đánh Giá
+            {t('navReviews')}
           </a>
           <a
             href="#faq"
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 text-base font-semibold text-slate-800 hover:text-emerald-700"
           >
-            FAQ
+            {t('navFaq')}
           </a>
 
           {onOpenMyBookings && (
@@ -187,20 +198,22 @@ export default function Navbar({ onOpenMyBookings }: NavbarProps) {
             >
               <span className="flex items-center gap-2">
                 <CalendarCheck className="w-5 h-5" />
-                Đơn đặt tour của tôi
+                {t('myBookings')}
               </span>
               <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded-full font-bold">
-                {recentOrders.length} đơn
+                {recentOrders.length}
               </span>
             </button>
           )}
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             <a
-              href="tel:0988333888"
+              href="https://zalo.me/0988333888"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-center flex items-center justify-center gap-2 shadow"
             >
-              <PhoneCall className="w-4 h-4" /> Hotline: 0988.333.888
+              <PhoneCall className="w-4 h-4" /> {t('hotlineZalo')}
             </a>
           </div>
         </div>

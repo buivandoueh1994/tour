@@ -1,55 +1,60 @@
+'use client';
+
 import React from 'react';
 import { ShieldCheck, HeartHandshake, Wrench, Sparkles } from 'lucide-react';
-
-const HIGHLIGHTS = [
-  {
-    icon: ShieldCheck,
-    title: 'Cam Kết An Toàn & Bảo Hiểm 100Tr',
-    desc: 'Tất cả du khách được trang bị bảo hiểm du lịch Bảo Việt trách nhiệm 100.000.000đ/vụ. Trang bị giáp bảo hộ 4 món và mũ bảo hiểm 3/4 đạt chuẩn an toàn cao nhất.',
-    badge: 'An Toàn Tuyệt Đối',
-    iconColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Xế Bản Địa (Easy Rider) Cứng Tay Lái & Có Tâm',
-    desc: 'Đội ngũ tài xế người H\'Mông, Tày, Dao sinh ra tại dốc đá, am hiểu từng khúc cua tay áo, kiêm thợ chụp ảnh check-in sống ảo và hướng dẫn viên nhiệt tình.',
-    badge: 'Bản Địa 100%',
-    iconColor: 'text-amber-600 bg-amber-50 border-amber-200',
-  },
-  {
-    icon: Wrench,
-    title: 'Cứu Hộ Dọc Tuyến 24/7 Trong 45 Phút',
-    desc: 'Mạng lưới trạm kỹ thuật cứu hộ túc trực tại Quản Bạ, Yên Minh, Đồng Văn và Mèo Vạc. Cam kết hỗ trợ đổi xe, vá xe hoặc xử lý sự cố trong vòng 45 phút.',
-    badge: 'Phản Ứng Nhanh',
-    iconColor: 'text-blue-600 bg-blue-50 border-blue-200',
-  },
-  {
-    icon: Sparkles,
-    title: 'Thanh Toán VietQR Tiện Lợi & Minh Bạch',
-    desc: 'Tích hợp cổng thanh toán VietQR & PayOS Napas247 tự động. Quét mã bằng bất kỳ ứng dụng ngân hàng nào, nhận voucher xác nhận đặt tour ngay sau 5 giây.',
-    badge: 'Xác Nhận Tức Thì',
-    iconColor: 'text-teal-700 bg-teal-50 border-teal-200',
-  },
-];
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Features() {
+  const { t } = useLanguage();
+
+  const highlights = [
+    {
+      icon: ShieldCheck,
+      title: t('feat1Title'),
+      desc: t('feat1Desc'),
+      badge: t('feat1Badge'),
+      iconColor: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    },
+    {
+      icon: HeartHandshake,
+      title: t('feat2Title'),
+      desc: t('feat2Desc'),
+      badge: t('feat2Badge'),
+      iconColor: 'text-amber-600 bg-amber-50 border-amber-200',
+    },
+    {
+      icon: Wrench,
+      title: t('feat3Title'),
+      desc: t('feat3Desc'),
+      badge: t('feat3Badge'),
+      iconColor: 'text-blue-600 bg-blue-50 border-blue-200',
+    },
+    {
+      icon: Sparkles,
+      title: t('feat4Title'),
+      desc: t('feat4Desc'),
+      badge: t('feat4Badge'),
+      iconColor: 'text-teal-700 bg-teal-50 border-teal-200',
+    },
+  ];
+
   return (
     <section id="highlights" className="py-20 bg-slate-50 border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-emerald-800 font-bold text-xs uppercase tracking-widest bg-emerald-100/80 px-3.5 py-1.5 rounded-full border border-emerald-200">
-            Giá Trị Cốt Lõi & Cam Kết
+            {t('featuresTag')}
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">
-            Trải Nghiệm Đỉnh Cao Với Tiêu Chuẩn An Toàn Khắt Khe
+            {t('featuresTitle')}
           </h2>
           <p className="text-slate-600 mt-3 text-base sm:text-lg">
-            Hà Giang Loop là cung đường phiêu lưu mạo hiểm, sự chuẩn bị chu đáo và an toàn của bạn luôn là kim chỉ nam trong mọi hành trình của chúng tôi.
+            {t('featuresSubtitle')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {HIGHLIGHTS.map((item, index) => {
+          {highlights.map((item, index) => {
             const Icon = item.icon;
             return (
               <div

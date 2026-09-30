@@ -1,8 +1,30 @@
-export function formatCurrency(amount: number): string {
+import { Tour, Language } from '@/types';
+
+export function formatCurrency(amount: number, lang: Language = 'vi'): string {
+  if (lang === 'en') {
+    return `${new Intl.NumberFormat('en-US').format(amount)} VND`;
+  }
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
   }).format(amount);
+}
+
+export function getLocalizedTour(tour: Tour, lang: Language): Tour {
+  if (lang !== 'en') return tour;
+  return {
+    ...tour,
+    title: tour.titleEn || tour.title,
+    duration: tour.durationEn || tour.duration,
+    transportLabel: tour.transportLabelEn || tour.transportLabel,
+    difficulty: (tour.difficultyEn as Tour['difficulty']) || tour.difficulty,
+    tag: tour.tagEn || tour.tag,
+    shortDesc: tour.shortDescEn || tour.shortDesc,
+    highlights: tour.highlightsEn || tour.highlights,
+    inclusions: tour.inclusionsEn || tour.inclusions,
+    exclusions: tour.exclusionsEn || tour.exclusions,
+    vehicleOptions: tour.vehicleOptionsEn || tour.vehicleOptions,
+  };
 }
 
 export function formatDate(dateString: string): string {

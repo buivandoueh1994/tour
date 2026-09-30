@@ -3,9 +3,18 @@
 import React from 'react';
 import Image from 'next/image';
 import { ArrowRight, ShieldCheck, Award, Users, QrCode, MessageCircle } from 'lucide-react';
-import { HIGHLIGHTS_STATS } from '@/data/tours';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function Hero() {
+  const { t } = useLanguage();
+
+  const stats = [
+    { value: '15,000+', label: t('statTravelersLabel') },
+    { value: '100%', label: t('statInsuranceLabel') },
+    { value: '4.9/5 ★', label: t('statRatingLabel') },
+    { value: '24/7', label: t('statRescueLabel') },
+  ];
+
   return (
     <>
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-slate-950">
@@ -26,22 +35,22 @@ export default function Hero() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center flex flex-col items-center">
           {/* Top Tag Pill */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-amber-300 text-xs sm:text-sm font-semibold mb-6 shadow-lg">
-            <span>🏆 Top 1 Đơn Vị Tổ Chức Tour Hà Giang Loop Bản Địa Uy Tín</span>
+            <span>{t('heroBadge')}</span>
           </div>
 
           {/* Main Heading */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.18] max-w-5xl mb-6">
-            Chinh Phục{' '}
+            {t('heroTitlePrefix')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-amber-300">
-              Hà Giang Loop
+              {t('heroTitleHighlight')}
             </span>
             <br />
-            Mảnh Đất Địa Đầu Tổ Quốc
+            {t('heroTitleSuffix')}
           </h1>
 
           {/* Subtitle */}
           <p className="text-slate-200 text-base sm:text-lg md:text-xl max-w-3xl font-normal leading-relaxed mb-10 text-balance">
-            Uốn lượn qua những khúc cua huyền thoại, chạm đỉnh đèo Mã Pí Lèng hùng vĩ và thả hồn trên dòng sông Nho Quế màu xanh ngọc bích. Hành trình phiêu lưu an toàn, đậm đà bản sắc cùng đội ngũ thổ địa tận tâm.
+            {t('heroSubtitle')}
           </p>
 
           {/* CTA Buttons */}
@@ -50,7 +59,7 @@ export default function Hero() {
               href="#tours"
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-amber-500/30 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 hover:shadow-2xl"
             >
-              <span>Xem Danh Sách Tour</span>
+              <span>{t('heroCtaTours')}</span>
               <ArrowRight className="w-5 h-5" />
             </a>
             <a
@@ -60,7 +69,7 @@ export default function Hero() {
               className="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white font-semibold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
             >
               <MessageCircle className="w-5 h-5 text-amber-300" />
-              <span>Tư Vấn Zalo 24/7</span>
+              <span>{t('heroCtaZalo')}</span>
             </a>
           </div>
 
@@ -68,19 +77,19 @@ export default function Hero() {
           <div className="flex flex-wrap items-center justify-center gap-y-3 gap-x-6 text-xs sm:text-sm text-slate-200 font-medium pt-4 border-t border-white/10 w-full max-w-4xl">
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Bảo hiểm du lịch 100tr/khách</span>
+              <span>{t('trustInsurance')}</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               <Award className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Xe máy & Giáp bảo hộ đời mới 100%</span>
+              <span>{t('trustBikes')}</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               <Users className="w-4 h-4 text-teal-400 shrink-0" />
-              <span>Xế bản địa cứng tay lái & am hiểu văn hóa</span>
+              <span>{t('trustDrivers')}</span>
             </div>
             <div className="flex items-center gap-2 bg-slate-900/60 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               <QrCode className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Quét VietQR nhận vé tức thì</span>
+              <span>{t('trustQr')}</span>
             </div>
           </div>
         </div>
@@ -90,7 +99,7 @@ export default function Hero() {
       <section className="bg-slate-50 py-8 border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {HIGHLIGHTS_STATS.map((stat, idx) => (
+            {stats.map((stat, idx) => (
               <div
                 key={idx}
                 className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-center flex flex-col justify-center items-center"
