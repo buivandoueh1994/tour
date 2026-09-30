@@ -16,11 +16,11 @@ export const TOURS_DATA: Tour[] = [
     tag: 'Bán chạy nhất',
     badgeColor: 'bg-rose-500 text-white',
     shortDesc: 'Cung đường phượt huyền thoại xuyên qua những khúc cua hiểm trở, đỉnh đèo Mã Pí Lèng và dòng sông Nho Quế ngọc bích.',
-    image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=1200&q=80',
     gallery: [
+      'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
     ],
     highlights: [
       'Đèo Mã Pí Lèng - một trong "Tứ đại đỉnh đèo" hùng vĩ bậc nhất miền Bắc',
@@ -104,11 +104,11 @@ export const TOURS_DATA: Tour[] = [
     tag: 'Được yêu thích nhất',
     badgeColor: 'bg-emerald-600 text-white',
     shortDesc: 'Lựa chọn số 1 cho người không tự tin tay lái: Ngồi sau ngắm cảnh mây trời, an toàn 100% và có bộ ảnh sống ảo chất ngất.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
     ],
     highlights: [
       'Xế bản địa người H\'Mông, Tày tay lái lụa, thuộc từng mét đường cua',
@@ -191,11 +191,11 @@ export const TOURS_DATA: Tour[] = [
     tag: 'Gia đình & Nghỉ dưỡng',
     badgeColor: 'bg-blue-600 text-white',
     shortDesc: 'Trải nghiệm trọn vẹn Hà Giang thảnh thơi, an toàn tuyệt đối với xe du lịch cao cấp, khách sạn 3-4 sao, hoàn hảo cho gia đình và trẻ nhỏ.',
-    image: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
     ],
     highlights: [
       'Di chuyển bằng xe Limousine VIP êm ái, máy lạnh khử khuẩn, không lo say xe',
@@ -287,11 +287,11 @@ export const TOURS_DATA: Tour[] = [
     tag: 'Mạo hiểm & Thiên nhiên',
     badgeColor: 'bg-amber-600 text-white',
     shortDesc: 'Băng qua lối mòn cheo leo trên vách núi Mã Pí Lèng, hạ trại ven bờ sông Nho Quế và tự tay chèo thuyền Kayak xuyên hẻm vực sâu thẳm.',
-    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1628744448840-55bdb2497bd4?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
     ],
     highlights: [
       'Trek cung đường Sky Path (Đường đi bộ trên mây) vắt vẻo bên sườn đèo Mã Pí Lèng',
@@ -414,14 +414,18 @@ export const MOCK_REVIEWS = [
     name: 'Nguyễn Hoàng Nam',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
     tour: 'Tour Hà Giang Loop - Xe máy Tự Lái (3N2Đ)',
+    tourBadge: 'Xe máy Tự Lái (3N2Đ)',
+    verified: true,
     rating: 5,
     date: 'Tháng 9, 2024',
     comment: 'Chuyến đi tuyệt vời nhất tuổi 25 của mình! Đèo Mã Pí Lèng nhìn từ ngoài hùng vĩ hơn ảnh gấp 10 lần. Đội ngũ chuẩn bị xe rất mới, giáp xịn và tư vấn đường đi chu đáo. Nhất định sẽ quay lại mùa hoa tam giác mạch!',
   },
   {
-    name: 'Jessica & David',
+    name: 'Jessica & David (UK)',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
     tour: 'Tour Hà Giang Easy Rider (3N2Đ)',
+    tourBadge: 'Easy Rider (3N2Đ)',
+    verified: true,
     rating: 5,
     date: 'Tháng 8, 2024',
     comment: 'Tuyệt vời cho ai không biết lái xe côn hoặc sợ đèo dốc như mình. Bác tài xế người Tày cực kỳ hiền lành, lái xe cực đầm tay và chụp ảnh cho mình siêu đẹp! Thanh toán qua VietQR quét app ngân hàng cái là nhận vé ngay lập tức.',
@@ -430,6 +434,8 @@ export const MOCK_REVIEWS = [
     name: 'Trần Minh Đức & Gia đình',
     avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=120&q=80',
     tour: 'Tour Limousine Cao Nguyên Đá (4N3Đ)',
+    tourBadge: 'Limousine Cao Cấp (4N3Đ)',
+    verified: true,
     rating: 5,
     date: 'Tháng 7, 2024',
     comment: 'Đi cùng bố mẹ lớn tuổi nên mình chọn tour Limousine. Xe rất êm, bác tài lái điềm đạm, nghỉ tại resort H’Mông Village view cực đỉnh. Cả nhà ai cũng khen dịch vụ chu đáo!',
@@ -437,8 +443,8 @@ export const MOCK_REVIEWS = [
 ];
 
 export const HIGHLIGHTS_STATS = [
-  { value: '15,000+', label: 'Phượt thủ đã đồng hành' },
-  { value: '100%', label: 'Bảo hiểm trọn gói tất cả các tour' },
-  { value: '4.9 / 5', label: 'Hơn 4,000 đánh giá 5 sao' },
-  { value: '24/7', label: 'Cứu hộ khẩn cấp trên tuyến Loop' },
+  { value: '15,000+', label: 'Du khách đồng hành' },
+  { value: '100%', label: 'Đã gồm bảo hiểm chuyến đi' },
+  { value: '4.9/5 ★', label: 'Hơn 4,000 đánh giá thực tế' },
+  { value: '24/7', label: 'Cứu hộ khẩn cấp dọc cung Loop' },
 ];

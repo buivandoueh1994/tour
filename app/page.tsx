@@ -12,12 +12,13 @@ import Footer from '@/components/Footer';
 import BookingModal from '@/components/BookingModal';
 import MyBookingsDrawer from '@/components/MyBookingsDrawer';
 import Chatbot from '@/components/Chatbot';
+import StickyMobileBar from '@/components/StickyMobileBar';
 
 export default function HomePage() {
   const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
 
   return (
-    <main className="min-h-screen flex flex-col bg-stone-50">
+    <main className="min-h-screen flex flex-col bg-slate-50">
       {/* Navigation Bar */}
       <Navbar onOpenMyBookings={() => setIsMyBookingsOpen(true)} />
 
@@ -50,6 +51,9 @@ export default function HomePage() {
         isOpen={isMyBookingsOpen}
         onClose={() => setIsMyBookingsOpen(false)}
       />
+
+      {/* Sticky Mobile Action Bar */}
+      <StickyMobileBar />
 
       {/* RAG AI Travel Chatbot */}
       <Chatbot />

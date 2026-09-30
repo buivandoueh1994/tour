@@ -16,7 +16,7 @@ export default function TourList() {
   const categories: { id: FilterCategory; label: string; icon: React.ElementType }[] = [
     { id: 'all', label: 'Tất Cả Gói Tour', icon: Sparkles },
     { id: 'motorbike', label: 'Xe Máy Tự Lái', icon: Bike },
-    { id: 'easy-rider', label: 'Easy Rider (Có Xế)', icon: Bike },
+    { id: 'easy-rider', label: 'Easy Rider (Có Xế Kèm)', icon: Bike },
     { id: 'limousine', label: 'Ô Tô / Limousine', icon: Car },
     { id: 'trekking', label: 'Trekking & Kayak', icon: Footprints },
     { id: 'rental', label: 'Thuê Xe Phượt', icon: KeyRound },
@@ -45,23 +45,23 @@ export default function TourList() {
   }, [activeFilter, searchQuery, sortBy]);
 
   return (
-    <section id="tours" className="py-20 bg-stone-100/70 border-b border-stone-200">
+    <section id="tours" className="py-20 bg-slate-50/60 border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Title */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-emerald-700 font-bold text-xs uppercase tracking-widest bg-emerald-100 px-3 py-1 rounded-full">
+          <span className="text-emerald-800 font-bold text-xs uppercase tracking-widest bg-emerald-100/80 px-3.5 py-1.5 rounded-full border border-emerald-200">
             Lộ Trình Độc Bản
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-stone-900 mt-3 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">
             Chọn Hành Trình Khám Phá Hà Giang Của Bạn
           </h2>
-          <p className="text-stone-600 mt-2 text-base">
+          <p className="text-slate-600 mt-3 text-base sm:text-lg">
             Từ trải nghiệm tự cầm lái ôm cua, ngồi sau xế bản địa ngắm cảnh đến tour Limousine nghỉ dưỡng gia đình.
           </p>
         </div>
 
         {/* Filter Bar & Search Controls */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm mb-10 space-y-4">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm mb-10 space-y-4">
           {/* Quick Categories Buttons */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
             {categories.map((cat) => {
@@ -71,10 +71,10 @@ export default function TourList() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveFilter(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                      ? 'bg-emerald-800 text-white shadow-md shadow-emerald-900/20'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -85,27 +85,27 @@ export default function TourList() {
           </div>
 
           {/* Search & Sort Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-stone-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100">
             {/* Search Input */}
             <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Tìm tour, địa danh (Mã Pí Lèng, Nho Quế...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-stone-800"
+                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:bg-white transition-all text-slate-800"
               />
             </div>
 
             {/* Sort Select */}
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <SlidersHorizontal className="w-4 h-4 text-stone-500" />
-              <span className="text-xs text-stone-500 font-medium">Sắp xếp:</span>
+              <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+              <span className="text-xs text-slate-500 font-medium">Sắp xếp:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'recommended' | 'price-asc' | 'price-desc' | 'rating')}
-                className="text-xs sm:text-sm font-semibold bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-xs sm:text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700"
               >
                 <option value="recommended">Đề xuất phổ biến</option>
                 <option value="price-asc">Giá: Thấp đến Cao</option>
@@ -124,14 +124,14 @@ export default function TourList() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-stone-300">
-            <p className="text-stone-500 font-medium">Không tìm thấy tour phù hợp với yêu cầu tìm kiếm của bạn.</p>
+          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+            <p className="text-slate-500 font-medium">Không tìm thấy tour phù hợp với yêu cầu tìm kiếm của bạn.</p>
             <button
               onClick={() => {
                 setActiveFilter('all');
                 setSearchQuery('');
               }}
-              className="mt-4 px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700"
+              className="mt-4 px-5 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-semibold hover:bg-emerald-900 shadow-sm"
             >
               Xem tất cả tour
             </button>

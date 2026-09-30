@@ -205,25 +205,36 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating Action Button */}
+    <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50">
+      {/* Floating Action Button with Tooltip */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="relative group flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-full shadow-2xl shadow-emerald-900/30 transition-all transform hover:scale-105"
-          aria-label="Mở chat AI tư vấn"
-        >
-          <div className="relative">
-            <Bot className="w-6 h-6 text-white" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
+        <div className="flex flex-col items-end gap-2">
+          {/* Enticing Tooltip Bubble */}
+          <div
+            onClick={() => setIsOpen(true)}
+            className="cursor-pointer bg-white text-slate-800 text-xs font-semibold px-3.5 py-2 rounded-2xl shadow-xl border border-slate-200/90 flex items-center gap-1.5 animate-bounce transition-all hover:scale-105 select-none max-w-[240px] sm:max-w-none text-right"
+          >
+            <span>Hỏi mình về thời tiết & kinh nghiệm đi Loop nhé! 👋</span>
           </div>
-          <span className="font-bold text-sm tracking-wide hidden sm:inline">
-            Hỏi AI Hà Giang
-          </span>
-          <span className="px-1.5 py-0.5 text-[10px] bg-white/20 rounded-md font-mono font-bold uppercase">
-            AI
-          </span>
-        </button>
+
+          {/* Floating Action Button */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative group flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-emerald-800 to-teal-700 hover:from-emerald-900 hover:to-teal-800 text-white rounded-full shadow-2xl shadow-emerald-950/30 transition-all transform hover:scale-105 border border-white/20"
+            aria-label="Mở chat AI tư vấn"
+          >
+            <div className="relative">
+              <Bot className="w-6 h-6 text-white" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping" />
+            </div>
+            <span className="font-bold text-sm tracking-wide hidden sm:inline">
+              Hỏi AI Hà Giang
+            </span>
+            <span className="px-1.5 py-0.5 text-[10px] bg-white/20 rounded-md font-mono font-bold uppercase">
+              AI
+            </span>
+          </button>
+        </div>
       )}
 
       {/* Expanded Chat Window */}

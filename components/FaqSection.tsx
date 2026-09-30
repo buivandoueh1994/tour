@@ -34,17 +34,17 @@ export default function FaqSection() {
   };
 
   return (
-    <section id="faq" className="py-20 bg-white border-b border-stone-200">
+    <section id="faq" className="py-20 bg-white border-b border-slate-200/80">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <span className="text-emerald-700 font-bold text-xs uppercase tracking-widest bg-emerald-100 px-3 py-1 rounded-full">
+          <span className="text-emerald-800 font-bold text-xs uppercase tracking-widest bg-emerald-100/80 px-3.5 py-1.5 rounded-full border border-emerald-200">
             Giải Đáp Thắc Mắc
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-stone-900 mt-3 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">
             Câu Hỏi Thường Gặp (FAQ)
           </h2>
-          <p className="text-stone-600 mt-2 text-base">
-            Những thông tin cần biết để bạn an tâm tận hưởng trọn vẹn chuyến phiêu lưu.
+          <p className="text-slate-600 mt-3 text-base sm:text-lg">
+            Những thông tin cần biết để bạn hoàn toàn an tâm tận hưởng trọn vẹn chuyến phiêu lưu Hà Giang Loop.
           </p>
         </div>
 
@@ -54,25 +54,31 @@ export default function FaqSection() {
             return (
               <div
                 key={idx}
-                className="border border-stone-200 rounded-2xl overflow-hidden transition-all"
+                className={`border rounded-2xl overflow-hidden transition-all duration-200 ${
+                  isOpen
+                    ? 'border-emerald-500/50 shadow-md ring-1 ring-emerald-500/20'
+                    : 'border-slate-200/80 hover:border-slate-300'
+                }`}
               >
                 <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full text-left p-5 bg-stone-50/50 hover:bg-stone-50 flex items-center justify-between gap-4 font-bold text-stone-900 text-sm sm:text-base transition-colors"
+                  className={`w-full text-left p-5 flex items-center justify-between gap-4 font-bold text-slate-900 text-sm sm:text-base transition-colors ${
+                    isOpen ? 'bg-emerald-50/40 text-emerald-950' : 'bg-slate-50/60 hover:bg-slate-50'
+                  }`}
                 >
                   <span className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                    {faq.q}
+                    <HelpCircle className={`w-5 h-5 shrink-0 transition-colors ${isOpen ? 'text-emerald-700' : 'text-slate-400'}`} />
+                    <span>{faq.q}</span>
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-stone-500 shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'rotate-180 text-emerald-600' : ''
+                    className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
+                      isOpen ? 'rotate-180 text-emerald-700' : 'text-slate-400'
                     }`}
                   />
                 </button>
 
                 {isOpen && (
-                  <div className="p-5 bg-white text-stone-600 text-xs sm:text-sm leading-relaxed border-t border-stone-100">
+                  <div className="p-5 bg-white text-slate-600 text-xs sm:text-sm leading-relaxed border-t border-slate-100 animate-fade-in">
                     {faq.a}
                   </div>
                 )}
