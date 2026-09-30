@@ -39,20 +39,33 @@ export default function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSourcesFor, setShowSourcesFor] = useState<string | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { openBookingModal } = useBooking();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
+  // Chỉ focus input khi mở modal lần đầu và dùng preventScroll: true để không giật màn hình
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
-      setTimeout(() => inputRef.current?.focus(), 150);
+      const timer = setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, messages]);
+  }, [isOpen]);
+
+  // Cuộn nội bộ khung chat khi có tin nhắn mới mà không ảnh hưởng tới window trang web
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isLoading, isOpen]);
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputValue).trim();
@@ -182,7 +195,10 @@ export default function Chatbot() {
           </div>
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-stone-50/70 text-xs sm:text-sm">
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 p-4 overflow-y-auto space-y-4 bg-stone-50/70 text-xs sm:text-sm overscroll-contain"
+          >
             {messages.map((msg) => {
               const isUser = msg.sender === 'user';
               return (
@@ -290,8 +306,6 @@ export default function Chatbot() {
                 <span>Đang tra cứu từ tài liệu RAG training...</span>
               </div>
             )}
-
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Quick Suggestions Carousel */}

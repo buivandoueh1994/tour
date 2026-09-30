@@ -16,7 +16,7 @@ export default function Hero() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center scale-105 animate-pulse-subtle filter brightness-75 contrast-110"
+          className="object-cover object-center scale-105 filter brightness-75 contrast-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/60 to-stone-950/30" />
         <div className="absolute inset-0 bg-radial-gradient opacity-40" />
