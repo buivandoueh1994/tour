@@ -11,6 +11,7 @@ import FaqSection from '@/components/FaqSection';
 import Footer from '@/components/Footer';
 import BookingModal from '@/components/BookingModal';
 import MyBookingsDrawer from '@/components/MyBookingsDrawer';
+import Chatbot from '@/components/Chatbot';
 
 export default function HomePage() {
   const [isMyBookingsOpen, setIsMyBookingsOpen] = useState(false);
@@ -49,6 +50,9 @@ export default function HomePage() {
         isOpen={isMyBookingsOpen}
         onClose={() => setIsMyBookingsOpen(false)}
       />
+
+      {/* RAG AI Travel Chatbot */}
+      <Chatbot />
     </main>
   );
 }
